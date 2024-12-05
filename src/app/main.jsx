@@ -1,15 +1,22 @@
 import "./style.css";
-import { render } from "@vanillajs";
+
+import { renderDOM } from "@pui-jsx";
+import { UI } from "@peasy-lib/peasy-ui";
+
+/* import { render } from "@vanillajs"; */
 
 function App({ children }) {
   const pageTitle = document.querySelector("title").innerText;
   return (
-    <>
+    <div style="text-align: center;">
       <h1>Welcome to my cursed PoC!</h1>
       <h2>{pageTitle}</h2>
-      {...children}
-    </>
+      <p>
+        There's no way to keep state, but you can render jsx with PUI with some
+        intermediary step
+      </p>
+    </div>
   );
 }
 
-render(document.body, App);
+renderDOM(UI, document.body, App);
