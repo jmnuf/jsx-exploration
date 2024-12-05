@@ -1,5 +1,5 @@
-import type { FunctionComponent, RenderedNode } from "./jsx-runtime";
-export type { JSXChildren } from "./jsx-runtime";
+import type { FunctionComponent, RenderedNode } from "./types";
+export type { JSXChildren, FunctionComponent } from "./types";
 
 export function render(
   parent: HTMLElement,
