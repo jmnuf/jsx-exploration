@@ -57,6 +57,7 @@ function List() {
  */
 function App() {
   const pageTitle = document.querySelector("title").innerText;
+  const stateFnName = "modelData";
   const [counter, _setCounter] = modelData(0);
   return (
     <div className="text-center">
@@ -72,8 +73,8 @@ function App() {
         <EchoInput />
         <h2>How state operates</h2>
         <h3>Use a function to create State node</h3>
-        <p>The way to have state is to use the function <code>{modelData.name}</code></p>
-        <code>let [counter, setCounter] = {modelData.name}(0);</code>
+        <p>The way to have state is to use the function <code>{stateFnName}</code></p>
+        <code>let [counter, setCounter] = {stateFnName}(0);</code>
         <h3>Getter Returns An Object</h3>
         <p>Value returned from getter is NOT the real value:<br /><code>typeof counter() == "{typeof counter()}"</code></p>
         <h3>True Value is Easily Accessed</h3>
