@@ -1,4 +1,4 @@
-import type { JSX, FunctionComponent } from "./types";
+import type { JSX, FunctionComponent, JSXNode } from "./types";
 import { createTextNode, createElement, PUINode } from "./types";
 
 export function renderJSX(
@@ -16,7 +16,7 @@ export function renderJSX(
     );
   } else if (typeof tag == "string") {
     // handling plain HTML codes
-    return renderTag(tag, props, renderChildren(props));
+    return renderTag(tag, props);
   } else {
     const err_msg = `Can't handle unknown tag type: ${typeof tag}\n${JSON.stringify(tag)}\n${JSON.stringify(props)}`;
     throw new TypeError(err_msg);
@@ -25,25 +25,47 @@ export function renderJSX(
 
 export const renderFragment = renderJSX.bind(undefined, undefined);
 
-function renderTag(
-  tag: string,
-  attributes: JSX.HTMLAttributes,
-  children: Array<JSX.Node>,
-): JSX.Element {
-  // TODO: Handle attributes and extract data
-  const dataRefs = {};
+function renderTag(tag: string, attributes: JSX.HTMLAttributes): JSX.Element {
+  const { children, className } = attributes;
+  delete attributes.children;
+  const dataRefs = findState(attributes);
+  if (className != null) {
+    delete attributes.className;
+    attributes["class"] = className;
+  }
   // TODO: Handle children rendering
-  return createElement(tag, dataRefs, attributes as any, children);
+  return createElement(
+    tag,
+    dataRefs,
+    attributes as any,
+    renderChildren(children),
+  );
 }
 
-function renderChildren(attributes: JSX.HTMLAttributes): Array<JSX.Node> {
-  let children = attributes?.children;
+function findState(attributes: JSX.HTMLAttributes) {
+  const states: Record<string, JSX.Node> = {};
+  for (const [key, val] of Object.entries(attributes)) {
+    if (!(val instanceof PUINode)) {
+      continue;
+    }
+    if (val.ntype != "state") {
+      continue;
+    }
+    states[key] = val;
+  }
+  return states;
+}
+
+function renderChildren(children: JSXNode | Array<JSXNode>): Array<JSX.Node> {
   if (!children) {
     return [];
   }
   const rendered: Array<JSX.Node> = [];
   if (!Array.isArray(children)) {
     children = [children];
+  }
+  if (children.length == 0) {
+    return children as Array<JSX.Node>;
   }
   for (const child of children) {
     switch (typeof child) {
@@ -59,9 +81,13 @@ function renderChildren(attributes: JSX.HTMLAttributes): Array<JSX.Node> {
         break;
       case "object":
         if (child instanceof PUINode) {
+          if (child.ntype == "custom") {
+            console.error("Custom elements are not supported in JSX yet");
+            continue;
+          }
           rendered.push(child);
         } else if (Array.isArray(child)) {
-          for (const c of renderChildren({ children: child })) {
+          for (const c of renderChildren(child)) {
             rendered.push(c);
           }
         } else {
