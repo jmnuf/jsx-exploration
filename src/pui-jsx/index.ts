@@ -29,47 +29,12 @@ export function genModel(
 ): Record<string, any> & { template: string } {
   const { tag, attrs, data } = elem;
   let template = `<${tag}`;
-  const eventsData = {} as Record<string, (event: Event) => void>;
   const attrsEntries = Object.entries(attrs).filter(
     ([key, _]) => key != "children",
   );
   if (attrsEntries.length > 0) {
     template += " ";
-    for (const [key, val] of attrsEntries) {
-      if (key == "children") {
-        continue;
-      }
-      if (key.startsWith("on")) {
-        if (typeof val != "function") {
-          console.error("Expected function for property " + key);
-          continue;
-        }
-        let eventName = key.substring(2);
-        eventName = `${eventName[0].toLowerCase()}${eventName.substring(1)}`;
-        template += ` \${ ${eventName} @=> ${key} }`;
-        eventsData[key] = val as (ev: Event) => void;
-        continue;
-      }
-      if (typeof val == "object") {
-        console.error(
-          "Objects not supported as properties, if you're using states it's not supported yet",
-        );
-        continue;
-      }
-      if (typeof val == "function") {
-        console.warn(
-          `Setting property ${key} as event handler but not using 'on' prefix makes it unclear. It's recommended to use 'on' prefix for events`,
-        );
-        template += ` \${ ${key} @=> ${key} }`;
-        eventsData[key] = val;
-        continue;
-      }
-      if (key == "className") {
-        template += `class="${val}"`;
-        continue;
-      }
-      template += ` ${key}="${val}"`;
-    }
+    template += renderAttributesTemplate(elem, data, attrsEntries);
   }
   template += ">";
   let child_idx = -1;
@@ -104,24 +69,10 @@ export function genModel(
     if (child.ntype == "element") {
       const subelem = child as PUIElement;
       let subtemplate = `<${subelem.tag}`;
-      for (const [sk, v] of Object.entries(subelem.attrs)) {
-        if (v instanceof PUINode) {
-          console.error("Unexpected JSX.Node");
-          continue;
-        }
-        if (typeof v != "function") {
-          // TODO: Not sure how to handle non-event attributes yet
-          continue;
-        }
-        const key = mark(sk);
-        data[key] = v;
-        if (sk.startsWith("on")) {
-          let eventName = sk.substring(2);
-          eventName = `${eventName[0].toLowerCase()}${eventName.substring(1)}`;
-          subtemplate += ` \${ ${eventName} @=> ${key} }`;
-        } else {
-          subtemplate += ` \${ ${sk} @=> ${key} }`;
-        }
+      const subattrs = Object.entries(subelem.attrs).filter(([key, _]) => key != "children");
+      if (subattrs.length > 0) {
+        subtemplate += " ";
+        subtemplate += renderAttributesTemplate(subelem, data, subattrs);
       }
       subtemplate += ">";
       subtemplate += renderChildrenTemplate([child_idx], subelem, data, elem);
@@ -130,11 +81,44 @@ export function genModel(
     }
   }
   template += `</${tag}>`;
-  for (const [key, val] of Object.entries(eventsData)) {
-    data[key] = val;
-  }
   data.template = template;
   return data as any;
+}
+
+function renderAttributesTemplate(_elem: PUIElement, data: any, attrs: Array<[string, any]>) {
+  let template = "";
+  for (const [key, val] of attrs) {
+    if (key == "children") {
+      continue;
+    }
+    if (key.startsWith("on")) {
+      if (typeof val != "function") {
+        console.error("Expected function for property " + key);
+        continue;
+      }
+      let eventName = key.substring(2);
+      eventName = `${eventName[0].toLowerCase()}${eventName.substring(1)}`;
+      template += ` \${ ${eventName} @=> ${key} }`;
+      data[key] = val as (ev: Event) => void;
+      continue;
+    }
+    if (typeof val == "object") {
+      console.error(
+        "Objects not supported as properties, if you're using states it's not supported yet",
+      );
+      continue;
+    }
+    if (typeof val == "function") {
+      console.warn(
+        `Setting property ${key} as event handler but not using 'on' prefix makes it unclear. It's recommended to use 'on' prefix for events`,
+      );
+      template += ` \${ ${key} @=> ${key} }`;
+      data[key] = val;
+      continue;
+    }
+    template += ` ${key}="${val}"`;
+  }
+  return template;
 }
 
 function renderChildrenTemplate(idxs: Array<number>, elem: PUIElement, data: any, parent: PUIElement) {
