@@ -10,15 +10,46 @@ body {
   align-items: center;
 }
 
+code {
+  background-color: #eee;
+  border-radius: 3px;
+  font-family: courier, monospace;
+  padding: 0px 3px;
+}
+
+
 .flex {
   display: flex;
 }
 .flex-col {
   flex-direction: column;
 }
+.w-3\/4 {
+  width: 75%;
+}
 .w-full {
   width: 100%;
 }
 .align-center {
   align-items: center;
+}
+.text-center {
+  text-align: center;
+}
+.text-start {
+  text-align: start;
+}
+
+.gap-1 {
+  gap: 0.25rem;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-4 {
+  gap: 1rem;
+}
+
+.p-4 {
+  padding: 1rem;
 }
