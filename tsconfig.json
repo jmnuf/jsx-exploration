@@ -11,12 +11,13 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-      "noEmit": true,
-      "paths": {
-          "@app/*": ["./src/app/*"],
-          "@components/*": ["./src/components/*"],
-          "@vanillajs/*": ["./src/vanillajs/*"],
-      },
+    "noEmit": true,
+    "paths": {
+      "@app/*": ["./src/app/*"],
+      "@components/*": ["./src/components/*"],
+      "@vanillajs/*": ["./src/vanillajs/*"],
+      "@pui-jsx/*": ["./src/pui-jsx/*"],
+    },
 
     /* Linting */
     "strict": true,
