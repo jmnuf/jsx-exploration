@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 
 
 export default defineConfig({
+  base: '/jsx-exploration/',
   resolve: {
     alias: {
       '@app': path.resolve(__dirname, './src/app'),
